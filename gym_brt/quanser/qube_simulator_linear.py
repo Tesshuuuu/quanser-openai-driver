@@ -30,7 +30,7 @@ def diff_forward_model_ode(state, action, mass, length):
     Jp = mp * Lp ** 2 / 12
     theta, alpha, theta_dot, alpha_dot = state
     Vm = action
-    tau = -(km * (Vm - km * theta_dot)) / Rm  # torque
+    tau = (km * (Vm - km * theta_dot)) / Rm  # torque
     # fmt: off
     # From Rotary Pendulum Workbook
     theta_dot_dot = (-Lp*Lr*mp*(-8.0*Dp*alpha_dot + Lp**2*mp*theta_dot**2*jnp.sin(2.0*alpha) + 4.0*Lp*g*mp*jnp.sin(alpha))*jnp.cos(alpha) + (4.0*Jp + Lp**2*mp)*(4.0*Dr*theta_dot + Lp**2*alpha_dot*mp*theta_dot*jnp.sin(2.0*alpha) + 2.0*Lp*Lr*alpha_dot**2*mp*jnp.sin(alpha) - 4.0*tau))/(4.0*Lp**2*Lr**2*mp**2*jnp.cos(alpha)**2 - (4.0*Jp + Lp**2*mp)*(4.0*Jr + Lp**2*mp*jnp.sin(alpha)**2 + 4.0*Lr**2*mp))
@@ -41,7 +41,8 @@ def diff_forward_model_ode(state, action, mass, length):
 
 @jit
 def forward_model_ode(state, action, dt, mass, length):
-    t = jnp.linspace(0.0, dt, 2)  # TODO: add and check integration steps here
+    t = jnp.linspace(0.0, dt, 2)  
+    theta_dot, alpha_dot, theta_dot_dot, alpha_dot_dot = diff_forward_model_ode(state, action, mass, length)
 
     next_state = odeint(lambda state, t: diff_forward_model_ode(state, action, mass, length), state, t)[-1]
     theta, alpha, theta_dot, alpha_dot = next_state

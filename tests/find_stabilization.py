@@ -16,11 +16,11 @@ import matplotlib.pyplot as plt
 from gym_brt.quanser.qube_simulator_linear import discretize_linearize_dynamics
 
 state0 = jnp.array([0.0, 0.0, 0.0, 0.0])
-action0 = 0.00
+action0 = 0.0
 dt = 0.01
 
-m_min, m_max = 0.024, 0.024
-ell_min, ell_max = 0.129, 0.129
+m_min, m_max = 0.023, 0.025
+ell_min, ell_max = 0.128, 0.130
 
 dx = 4
 du = 1
@@ -88,7 +88,7 @@ def grad_descent(K, As, Bs, alpha, n_iterations):
         clip_val = 1e3
         grad_k = jnp.where(norm > clip_val, grad_k * (clip_val/norm), grad_k)
         K = K - alpha*grad_k
-        # K = jnp.reshape(K, (du, dx))
+        K = jnp.reshape(K, (du, dx))
         # ensure all elements of K are identical
         # K = jnp.full(K.shape, jnp.mean(K))
         jax.debug.print('K: {k}', k = K)
@@ -131,73 +131,22 @@ all_samples_Ks = []
 all_samples_SA_cost = []
 all_samples_DR_cost = []
 
-for i, n_samples in enumerate([10]):
-  all_Ks = []
-  all_SA_cost = []
-  all_DR_cost = []
-  base_key = random.PRNGKey(i+2)
-  subkeys = random.split(base_key, n_trials)
-  for trial in range(n_trials):
-    # generate new subkey for each trial
-    subkey = subkeys[trial]
-    # print(f'subkey: {subkey}')
-    print(f'trial {trial+1} of {n_trials} for n_samples = {n_samples}')
-    systems = [discretize_linearize_dynamics(state0, action0, dt, mass, length) for mass,length in zip(random.uniform(subkey, minval = m_min, maxval = m_max, shape = (n_samples,)), random.uniform(subkey, minval = ell_min, maxval = ell_max, shape = (n_samples,)))]
-    As = jnp.stack([A for A, B in systems])
-    Bs = jnp.stack([B for A, B in systems])
-    # print('As: ', As)
-    # print('Bs: ', Bs)
-    print('As.shape: ', As.shape)
-    print('Bs.shape: ', Bs.shape)
+base_key = random.PRNGKey(0)
+system = discretize_linearize_dynamics(state0, action0, dt, m_min, ell_min)
+A, B = system
+print('A: ', A)
+print('B: ', B)
 
-    rho = jnp.max(spec_rad(As))
-    gamma = min(0.9*rho**(-2), 1)
-
-    K = jnp.array([[0.0, 0.0, 0.0, 0.0]])
-   
-    Ks = []
-    SA_cost = []
-    # DR_cost = [
-
-    # check if the spectral radius is less than 1 and gamma is less than 1
-    while gamma < 0.999:
-      K = grad_descent(K, jnp.sqrt(gamma)*As, jnp.sqrt(gamma)*Bs, alpha, n_iterations)
-      Ks.append(K)
-      SA_cost.append(cost(K, As, Bs))
-      # DR_cost.append(cost(K, eval_As, eval_Bs))
-      print('K: ', K)
-      print('spectral radius', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
-    #   print('A + B@K', [A+B@K for (A,B) in zip(As,Bs)])
-      print('discounted spectral radius', max([spec_rad((jnp.sqrt(gamma)*A)+(jnp.sqrt(gamma)*B)@K) for (A,B) in zip(As,Bs)]))
-      print('iteration: ', len(Ks))
-      gamma = update_gamma(gamma, As, Bs, K)
-      print('gamma: ', gamma)
-    #   print('SA_cost: ', cost(K, As, Bs))
-    #   print('DR_cost: ', cost(K, eval_As, eval_Bs))
-    for i in range(40):
-      K = grad_descent(K, As, Bs, alpha, n_iterations)
-      Ks.append(K)
-      SA_cost.append(cost(K, As, Bs))
-      # DR_cost.append(cost(K, eval_As, eval_Bs))
-      print('iteration: ', len(Ks))
-    #   print('K: ', K)
-      print('SA_cost: ', cost(K, As, Bs))
-    #   print('DR_cost: ', cost(K, eval_As, eval_Bs))
-
-    print('final controller: ', K)
-    all_Ks.append(Ks)
-    all_SA_cost.append(SA_cost)
-    # all_DR_cost.append(DR_cost)
-  
-  all_samples_Ks.append(all_Ks)
-  all_samples_SA_cost.append(all_SA_cost)
-  # all_samples_DR_cost.append(all_DR_cost)
+K = jnp.array([[-2.0, 35.0, -1.5, 3.0]])
+print('spec_rad: ', spec_rad(A+B@K))
 
 
-# save the results
-# with open(f'stabilization_results_{n_trials}_M50.pkl', 'wb') as f:
-#   pickle.dump({
-#     'all_samples_Ks': all_samples_Ks,
-#     'all_samples_SA_cost': all_samples_SA_cost,
-#     'all_samples_DR_cost': all_samples_DR_cost
-#   }, f)
+# for i in range(40):
+#   K = grad_descent(K, As, Bs, alpha, n_iterations)
+#   Ks.append(K)
+#   SA_cost.append(cost(K, As, Bs))
+#   # DR_cost.append(cost(K, eval_As, eval_Bs))
+#   print('iteration: ', len(Ks))
+# #   print('K: ', K)
+#   print('SA_cost: ', cost(K, As, Bs))
+# #   print('DR_cost: ', cost(K, eval_As, eval_Bs))

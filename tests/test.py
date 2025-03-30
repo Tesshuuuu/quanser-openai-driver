@@ -6,7 +6,7 @@ import gym
 import time
 import argparse
 import numpy as np
-
+import matplotlib.pyplot as plt
 from gym_brt.envs import (
     QubeSwingupEnv,
     QubeSwingupSparseEnv,
@@ -66,7 +66,8 @@ def test_env(
     use_simulator=False,
     render=False,
 ):
-
+    theta_lst = []
+    alpha_lst = []
     with env_name(use_simulator=use_simulator, frequency=frequency) as env:
         for episode in range(num_episodes):
             state = env.reset()
@@ -74,14 +75,17 @@ def test_env(
             for step in range(num_steps):
                 action = policy(state, step=step, frequency=frequency)
                 state, reward, done, info = env.step(action)
+                theta_lst.append(info["theta"])
+                alpha_lst.append(info["alpha"])
                 if done:
+                    print("Episode {} finished".format(episode))
                     break
                 if verbose:
                     print_info(info, action, reward)
                 if render:
                     env.render()
 
-
+    return theta_lst, alpha_lst
 def main():
     envs = {
         "QubeSwingupEnv": QubeSwingupEnv,
@@ -138,14 +142,14 @@ def main():
     parser.add_argument(
         "-ne",
         "--num-episodes",
-        default="10",
+        default="1",
         type=int,
         help="Number of episodes to run.",
     )
     parser.add_argument(
         "-ns",
         "--num-steps",
-        default="10000",
+        default="100000",
         type=int,
         help="Number of step to run per episode.",
     )
@@ -166,16 +170,21 @@ def main():
     print("Controller:   {}".format(args.controller))
     print("{} steps over {} episodes".format(args.num_steps, args.num_episodes))
     print("Samples freq: {}".format(args.frequency))
-    test_env(
+    theta_lst, alpha_lst = test_env(
         envs[args.env],
         policies[args.controller],
         num_episodes=args.num_episodes,
         num_steps=args.num_steps,
         frequency=args.frequency,
         verbose=args.verbose,
-        use_simulator=args.use_simulator,
-        render=args.render,
+        use_simulator=True,
+        render=True,
     )
+    plt.figure(figsize=(10, 5))
+    plt.plot(theta_lst, label="theta")
+    plt.plot(alpha_lst, label="alpha")
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":

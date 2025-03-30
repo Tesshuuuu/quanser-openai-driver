@@ -54,8 +54,10 @@ class QubeSwingupEnv(QubeBaseEnv):
 
     def _isdone(self):
         done = False
-        done |= self._episode_steps >= self._max_episode_steps
-        done |= abs(self._theta) > (90 * np.pi / 180)
+        # done |= self._episode_steps >= self._max_episode_steps
+        # done |= abs(self._theta) > (90 * np.pi / 180)
+        if done:
+            print("Finished with theta: {}".format(self._theta))
         return done
 
     def reset(self):
