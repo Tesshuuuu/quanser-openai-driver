@@ -56,8 +56,20 @@ class QubeSwingupEnv(QubeBaseEnv):
         done = False
         # done |= self._episode_steps >= self._max_episode_steps
         # done |= abs(self._theta) > (90 * np.pi / 180)
-        if done:
-            print("Finished with theta: {}".format(self._theta))
+        # Check if theta has been close to 0 for multiple steps
+        # alpha_threshold = 0.1  # radians, about 5.7 degrees
+        # if abs(self._alpha) < alpha_threshold:
+        #     if not hasattr(self, '_stable_steps'):
+        #         self._stable_steps = 0
+        #     self._stable_steps += 1
+        #     if self._stable_steps >= 400:  # Stable for 50 timesteps
+        #         done = True
+        # else:
+        #     if hasattr(self, '_stable_steps'):
+        #         self._stable_steps = 0
+        # if done:
+        #     print("Finished with theta: {}".format(self._theta))
+        #     print("Finished with alpha: {}".format(self._alpha))
         return done
 
     def reset(self):

@@ -90,14 +90,14 @@ def energy_control_policy(state, **kwargs):
 
 
 # Hold policy
-def pd_control_policy(state, **kwargs):
+def pd_control_policy(state, kp_theta=-2.0, kp_alpha=35.0, kd_theta=-1.5, kd_alpha=3.0, **kwargs):
     state = _convert_state(state)
     theta, alpha, theta_dot, alpha_dot = state
     # multiply by proportional and derivative gains
-    kp_theta = -2.0
-    kp_alpha = 35.0
-    kd_theta = -1.5
-    kd_alpha = 3.0
+    kp_theta = kp_theta
+    kp_alpha = kp_alpha
+    kd_theta = kd_theta
+    kd_alpha = kd_alpha
 
     # If pendulum is within 20 degrees of upright, enable balance control, else zero
     if np.abs(alpha) <= (20.0 * np.pi / 180.0):
@@ -114,13 +114,18 @@ def pd_control_policy(state, **kwargs):
 
 
 # Flip and Hold
-def flip_and_hold_policy(state, **kwargs):
+def flip_and_hold_policy(state, kp_theta=-0.94, kp_alpha=32.0, kd_theta=-2.0, kd_alpha=3.6, **kwargs):
     state = _convert_state(state)
     theta, alpha, theta_dot, alpha_dot = state
 
+    kp_theta = kp_theta
+    kp_alpha = kp_alpha
+    kd_theta = kd_theta
+    kd_alpha = kd_alpha
+
     # If pendulum is within 20 degrees of upright, enable balance control
     if np.abs(alpha) <= (20.0 * np.pi / 180.0):
-        action = pd_control_policy(state)
+        action = pd_control_policy(state, kp_theta, kp_alpha, kd_theta, kd_alpha)
     else:
         action = energy_control_policy(state)
     return action

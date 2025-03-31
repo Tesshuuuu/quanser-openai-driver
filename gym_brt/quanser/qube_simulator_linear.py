@@ -30,7 +30,7 @@ def diff_forward_model_ode(state, action, mass, length):
     Jp = mp * Lp ** 2 / 12
     theta, alpha, theta_dot, alpha_dot = state
     Vm = action
-    tau = (km * (Vm - km * theta_dot)) / Rm  # torque
+    tau = -(km * (Vm - km * theta_dot)) / Rm  # torque
     # fmt: off
     # From Rotary Pendulum Workbook
     theta_dot_dot = (-Lp*Lr*mp*(-8.0*Dp*alpha_dot + Lp**2*mp*theta_dot**2*jnp.sin(2.0*alpha) + 4.0*Lp*g*mp*jnp.sin(alpha))*jnp.cos(alpha) + (4.0*Jp + Lp**2*mp)*(4.0*Dr*theta_dot + Lp**2*alpha_dot*mp*theta_dot*jnp.sin(2.0*alpha) + 2.0*Lp*Lr*alpha_dot**2*mp*jnp.sin(alpha) - 4.0*tau))/(4.0*Lp**2*Lr**2*mp**2*jnp.cos(alpha)**2 - (4.0*Jp + Lp**2*mp)*(4.0*Jr + Lp**2*mp*jnp.sin(alpha)**2 + 4.0*Lr**2*mp))
@@ -53,14 +53,14 @@ def forward_model_ode(state, action, dt, mass, length):
     return jnp.array([theta, alpha, theta_dot, alpha_dot])
 
 
-@jit
-def dynamics(state, action, dt, mass, length):
-    return forward_model_ode(state, action, dt, mass, length)
+# @jit
+# def dynamics(state, action, dt, mass, length):
+#     return forward_model_ode(state, action, dt, mass, length)
 
 @jit
 def linearize_dynamics(state, action, dt, mass, length):
-    Al = jax.jacobian(dynamics, argnums=0)(state, action, dt, mass, length)
-    Bl = jax.jacobian(dynamics, argnums=1)(state, action, dt, mass, length)
+    Al = jax.jacobian(diff_forward_model_ode, argnums=0)(state, action, mass, length)
+    Bl = jax.jacobian(diff_forward_model_ode, argnums=1)(state, action, mass, length)
     return Al, Bl
 
 @jit

@@ -65,6 +65,10 @@ def test_env(
     verbose=False,
     use_simulator=False,
     render=False,
+    kp_theta=None,
+    kp_alpha=None,
+    kd_theta=None,
+    kd_alpha=None,
 ):
     theta_lst = []
     alpha_lst = []
@@ -73,7 +77,7 @@ def test_env(
             state = env.reset()
             state, reward, done, info = env.step(np.array([0], dtype=np.float64))
             for step in range(num_steps):
-                action = policy(state, step=step, frequency=frequency)
+                action = policy(state, step=step, frequency=frequency, kp_theta=kp_theta, kp_alpha=kp_alpha, kd_theta=kd_theta, kd_alpha=kd_alpha)
                 state, reward, done, info = env.step(action)
                 theta_lst.append(info["theta"])
                 alpha_lst.append(info["alpha"])
@@ -86,6 +90,22 @@ def test_env(
                     env.render()
 
     return theta_lst, alpha_lst
+
+def get_gains_from_keyboard():
+    print("\nEnter controller gains:")
+    kp_theta = float(input("Enter kp_theta (default=-2.0): ") or "-2.0")
+    kp_alpha = float(input("Enter kp_alpha (default=35.0): ") or "35.0")
+    kd_theta = float(input("Enter kd_theta (default=-1.5): ") or "-1.5")
+    kd_alpha = float(input("Enter kd_alpha (default=3.0): ") or "3.0")
+    
+    print("\nUsing gains:")
+    print(f"kp_theta: {kp_theta}")
+    print(f"kp_alpha: {kp_alpha}")
+    print(f"kd_theta: {kd_theta}")
+    print(f"kd_alpha: {kd_alpha}")
+    
+    return kp_theta, kp_alpha, kd_theta, kd_alpha
+
 def main():
     envs = {
         "QubeSwingupEnv": QubeSwingupEnv,
@@ -135,7 +155,7 @@ def main():
     parser.add_argument(
         "-c",
         "--controller",
-        default="random",
+        default="flip",
         choices=list(policies.keys()),
         help="Select what type of action to take.",
     )
@@ -149,7 +169,7 @@ def main():
     parser.add_argument(
         "-ns",
         "--num-steps",
-        default="100000",
+        default="10000",
         type=int,
         help="Number of step to run per episode.",
     )
@@ -164,7 +184,26 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("-r", "--render", action="store_true")
     parser.add_argument("-s", "--use_simulator", action="store_true")
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
+
+    # Get gains from keyboard input
+    # kp_theta, kp_alpha, kd_theta, kd_alpha = get_gains_from_keyboard()
+    
+
+
+    # Update args with the keyboard inputs
+    DR = True
+    if DR:
+        args.kp_theta = -0.6562398
+        args.kp_alpha = 39.63346
+        args.kd_theta = -1.0030441
+        args.kd_alpha = 5.8323298
+    else:
+        # kp_theta, kp_alpha, kd_theta, kd_alpha = get_gains_from_keyboard()
+        args.kp_theta = -0.36665
+        args.kp_alpha = 27.454126
+        args.kd_theta = -0.509547
+        args.kd_alpha = 2.4390068
 
     print("Testing Env:  {}".format(args.env))
     print("Controller:   {}".format(args.controller))
@@ -177,8 +216,12 @@ def main():
         num_steps=args.num_steps,
         frequency=args.frequency,
         verbose=args.verbose,
-        use_simulator=True,
-        render=True,
+        use_simulator=False,
+        render=False,
+        kp_theta=args.kp_theta,
+        kp_alpha=args.kp_alpha,
+        kd_theta=args.kd_theta,
+        kd_alpha=args.kd_alpha,
     )
     plt.figure(figsize=(10, 5))
     plt.plot(theta_lst, label="theta")
