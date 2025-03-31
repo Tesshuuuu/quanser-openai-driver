@@ -193,7 +193,7 @@ def main():
 
 
     # Update args with the keyboard inputs
-    DR = True
+    DR = False
     if DR:
         # args.kp_theta = -0.6562398
         # args.kp_alpha = 39.63346
@@ -215,73 +215,32 @@ def main():
     print("{} steps over {} episodes".format(args.num_steps, args.num_episodes))
     print("Samples freq: {}".format(args.frequency))
     
-    # Create two figures for plotting
-    plt.figure(1, figsize=(10, 5))
-    plt.figure(2, figsize=(10, 5))
-    theta_lst = []
-    alpha_lst = []
+    # Create figure for plotting
+    plt.figure(figsize=(10, 5))
     
-    # Run test 10 times and plot results
-    for run in range(10):
-        print(f"Running test {run+1} of 10")
-        theta_lst, alpha_lst = test_env(
-            envs[args.env],
-            policies[args.controller],
-            num_episodes=args.num_episodes,
-            num_steps=args.num_steps,
-            frequency=args.frequency,
-            verbose=args.verbose,
-            use_simulator=False,
-            render=False,
-            kp_theta=args.kp_theta,
-            kp_alpha=args.kp_alpha,
-            kd_theta=args.kd_theta,
-            kd_alpha=args.kd_alpha,
-        )
-        print(f"finished run {run+1}")
+    theta_lst, alpha_lst = test_env(
+        envs[args.env],
+        policies[args.controller],
+        num_episodes=args.num_episodes,
+        num_steps=args.num_steps,
+        frequency=args.frequency,
+        verbose=args.verbose,
+        use_simulator=False,
+        render=False,
+        kp_theta=args.kp_theta,
+        kp_alpha=args.kp_alpha,
+        kd_theta=args.kd_theta,
+        kd_alpha=args.kd_alpha,
+    )
         
-        # Convert radians to degrees
-        theta_degrees = np.array(theta_lst) * 180 / np.pi
-        alpha_degrees = np.array(alpha_lst) * 180 / np.pi
-        
-        theta_lst.extend(theta_degrees)
-        alpha_lst.extend(alpha_degrees)
 
-        # Plot theta
-        plt.figure(1)
-        plt.plot(theta_degrees, label=f"Run {run+1}")
-        
-        # Plot alpha
-        plt.figure(2)
-        plt.plot(alpha_degrees, label=f"Run {run+1}")
-        
-        # Add 10 second pause between runs (except after the last run)
-        if run < 9:  # Only pause after runs 1-9
-            print("Pausing for 10 seconds before next run...")
-            time.sleep(10)
-
-    with open(f"test_{DR}.pkl", "wb") as f:
-        pickle.dump({"theta_lst": theta_lst, "alpha_lst": alpha_lst}, f)
-
-    # Format theta plot
-    plt.figure(1)
-    # plt.title("Theta Angle Over Time", fontsize=14)
-    plt.xlabel("Steps", fontsize=14)
-    plt.ylabel("Theta (deg)", fontsize=14)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
+    plt.plot(theta_lst, label=f"theta")
+    plt.plot(alpha_lst, label=f"alpha")
+    plt.legend()
+    plt.title(f"Multiple Runs - {args.env} with {args.controller} controller")
+    plt.xlabel("Steps")
+    plt.ylabel("Angle (rad)")
     plt.grid(True)
-    plt.savefig(f"theta_{DR}.png")
-
-    # Format alpha plot
-    plt.figure(2)
-    # plt.title("Alpha Angle Over Time", fontsize=14)
-    plt.xlabel("Steps", fontsize=14)
-    plt.ylabel("Alpha (deg)", fontsize=14)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.grid(True)
-    plt.savefig(f"alpha_{DR}.png")
     plt.show()
 
 

@@ -19,8 +19,8 @@ state0 = jnp.array([0.0, 0.0, 0.0, 0.0])
 action0 = 0.00
 dt = 0.01
 
-m_min, m_max = 0.03, 0.07
-ell_min, ell_max = 0.15, 0.25
+m_min, m_max = 0.02, 0.08
+ell_min, ell_max = 0.1, 0.3
 
 # work w 0.04 0.06 0.18 0.22
 
@@ -179,45 +179,39 @@ SA_cost = []
 
 # K = jnp.array([[-0.36, 27.45, -0.5, 2.43]])
 
-# # check if the spectral radius is less than 1 and gamma is less than 1
-# while gamma < 0.999:
-#   n_iterations_gamma = 160
-#   alpha_gamma = 1e-3
-#   if gamma > 0.85:
-#     n_iterations_gamma = 320
-#     alpha_gamma = 1e-5
-#   K = grad_descent(K, jnp.sqrt(gamma)*As, jnp.sqrt(gamma)*Bs, alpha_gamma, n_iterations_gamma)
-#   Ks.append(K)
-#   SA_cost.append(cost(K, As, Bs))
-#   # DR_cost.append(cost(K, eval_As, eval_Bs))
-#   print('K: ', K)
-#   print('spectral radius', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
-# #   print('A + B@K', [A+B@K for (A,B) in zip(As,Bs)])
-#   print('discounted spectral radius', max([spec_rad((jnp.sqrt(gamma)*A)+(jnp.sqrt(gamma)*B)@K) for (A,B) in zip(As,Bs)]))
-#   print('iteration: ', len(Ks))
-#   gamma = update_gamma(gamma, As, Bs, K)
-#   print('gamma: ', gamma)
-#   # print('SA_cost: ', cost(K, As, Bs))
-#   # print('DR_cost: ', cost(K, eval_As, eval_Bs))
+# check if the spectral radius is less than 1 and gamma is less than 1
+while gamma < 0.999:
+  n_iterations_gamma = 160
+  alpha_gamma = 1e-3
+  if gamma > 0.85:
+    n_iterations_gamma = 480
+    alpha_gamma = 1e-5
+  K = grad_descent(K, jnp.sqrt(gamma)*As, jnp.sqrt(gamma)*Bs, alpha_gamma, n_iterations_gamma)
+  Ks.append(K)
+  SA_cost.append(cost(K, As, Bs))
+  # DR_cost.append(cost(K, eval_As, eval_Bs))
+  print('K: ', K)
+  print('spectral radius', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
+#   print('A + B@K', [A+B@K for (A,B) in zip(As,Bs)])
+  print('discounted spectral radius', max([spec_rad((jnp.sqrt(gamma)*A)+(jnp.sqrt(gamma)*B)@K) for (A,B) in zip(As,Bs)]))
+  print('iteration: ', len(Ks))
+  gamma = update_gamma(gamma, As, Bs, K)
+  print('gamma: ', gamma)
+  # print('SA_cost: ', cost(K, As, Bs))
+  # print('DR_cost: ', cost(K, eval_As, eval_Bs))
 
 print('Finish discount annealing')
 
-alpha = 1e-4
+# K = jnp.array([[-0.05555186,  19.215942   -0.1094636   1.2435844 ]])
+
+alpha = 2e-5
 n_iterations = 80
 n_itertions_final = 5
 
-# K = jnp.array([[-0.129, 19.6, -0.270, 1.32]])
-# K = jnp.array([[-0.31429935, 26.143177, -0.42145315, 2.1529417]])
-# K = jnp.array([[-0.39574012, 29.219822, -0.46731275, 3.0289934]])
-# K = jnp.array([[-0.39574012, 29.219822, -0.46731275, 3.0289934]])
-# K = jnp.array([[-0.5886451, 36.455795, -0.7668316, 5.1436768]])
-# K = jnp.array([[-0.62175417, 37.910633, -0.82585025, 5.306202]])
-K = jnp.array([[-0.6562398, 39.63346, -1.0030441, 5.8323298]])
 print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
   
 
-for i in range(30):
-
+for i in range(150):
   K = grad_descent(K, As, Bs, alpha, n_iterations)
   Ks.append(K)
   print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
@@ -228,6 +222,49 @@ for i in range(30):
   print('SA_cost: ', cost(K, As, Bs))
 #   print('DR_cost: ', cost(K, eval_As, eval_Bs))
 
+
+# alpha = 5e-5
+# n_iterations = 80
+# n_itertions_final = 5
+
+# # K = jnp.array([[-0.129, 19.6, -0.270, 1.32]])
+# # K = jnp.array([[-0.31429935, 26.143177, -0.42145315, 2.1529417]])
+# # K = jnp.array([[-0.39574012, 29.219822, -0.46731275, 3.0289934]])
+# # K = jnp.array([[-0.39574012, 29.219822, -0.46731275, 3.0289934]])
+# # K = jnp.array([[-0.5886451, 36.455795, -0.7668316, 5.1436768]])
+# # K = jnp.array([[-0.62175417, 37.910633, -0.82585025, 5.306202]])
+# # K = jnp.array([[-0.6562398, 39.63346, -1.0030441, 5.8323298]])
+# print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
+  
+
+# for i in range(100):
+
+#   K = grad_descent(K, As, Bs, alpha, n_iterations)
+#   Ks.append(K)
+#   print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
+#   SA_cost.append(cost(K, As, Bs))
+#   # DR_cost.append(cost(K, eval_As, eval_Bs))
+#   print('iteration: ', len(Ks))
+#   print('K: ', K)
+#   print('SA_cost: ', cost(K, As, Bs))
+
+# alpha = 5e-5
+# n_iterations = 80
+# n_itertions_final = 5
+  
+# K = jnp.array([[-0.36322108, 28.1179, -0.49168196, 2.453794]])
+# print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
+
+# for i in range(100):
+
+#   K = grad_descent(K, As, Bs, alpha, n_iterations)
+#   Ks.append(K)
+#   print('spectral radius: ', max([spec_rad(A+B@K) for (A,B) in zip(As,Bs)]))
+#   SA_cost.append(cost(K, As, Bs))
+#   # DR_cost.append(cost(K, eval_As, eval_Bs))
+#   print('iteration: ', len(Ks))
+#   print('K: ', K)
+#   print('SA_cost: ', cost(K, As, Bs))
 
 # alpha = 1e-3
 # n_iterations = 40
@@ -251,6 +288,13 @@ print('final controller: ', K)
 all_Ks.append(Ks)
 all_SA_cost.append(SA_cost)
 # all_DR_cost.append(DR_cost)
+
+# save the results
+with open(f'quanser_qube.pkl', 'wb') as f:
+  pickle.dump({
+    'all_Ks': all_Ks,
+    'all_SA_cost': all_SA_cost
+  }, f)
 
 print('cost_true: ', jnp.trace(dlyap_direct((A_true+B_true@K).T, Q + K.T@R@K)))
 
